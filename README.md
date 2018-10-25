@@ -20,7 +20,7 @@
 
 ## 安装
 
- + 下载已经编译好的war包
+ + 下载已经编译好的war包,位于releases目录
  + 确认本机已经拥有java的运行环境（JDK>=1.8）,如果没有，请您安装java的运行环境
  + 在war包的同级目录，在控制台输入启动命令 java -jar cjtc.war
  + 打开浏览器，访问 localhost:8080
