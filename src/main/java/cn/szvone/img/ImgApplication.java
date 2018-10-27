@@ -20,6 +20,7 @@ public class ImgApplication {
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
         return corsConfiguration;
+
     }
 
     /**
