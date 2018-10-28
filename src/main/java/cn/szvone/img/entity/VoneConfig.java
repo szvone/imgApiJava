@@ -7,6 +7,7 @@ public class VoneConfig {
     private String key;
     private Integer type;
     private String SinaUpdateTime;
+    private String SinaCookie;
 
     @Override
     public String toString() {
@@ -17,7 +18,16 @@ public class VoneConfig {
                 ", key='" + key + '\'' +
                 ", type=" + type +
                 ", SinaUpdateTime='" + SinaUpdateTime + '\'' +
+                ", SinaCookie='" + SinaCookie + '\'' +
                 '}';
+    }
+
+    public String getSinaCookie() {
+        return SinaCookie;
+    }
+
+    public void setSinaCookie(String sinaCookie) {
+        SinaCookie = sinaCookie;
     }
 
     public String getAdmin() {

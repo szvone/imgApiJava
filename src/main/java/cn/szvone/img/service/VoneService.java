@@ -3,14 +3,12 @@ package cn.szvone.img.service;
 import cn.szvone.img.dto.ApiRes;
 import cn.szvone.img.dto.CommonRes;
 import cn.szvone.img.entity.VoneConfig;
-import cn.szvone.img.util.ApiResultUtil;
-import cn.szvone.img.util.ResultUtil;
-import cn.szvone.img.util.SougouApi;
-import cn.szvone.img.util.VoneUtil;
+import cn.szvone.img.util.*;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ClassUtils;
 
 import java.io.File;
+import java.util.Date;
 
 
 @Service
@@ -34,6 +32,33 @@ public class VoneService {
 
         if (voneConfig.getType() == 1){
             String res = SougouApi.uploadImg(imgBase64);
+            if (res.indexOf("http")>=0){
+                return ApiResultUtil.success(res);
+            }else{
+                return ApiResultUtil.error("上传失败");
+            }
+        }else if (voneConfig.getType() == 2){
+            String ck = voneConfig.getSinaCookie();
+            long lastTime = 0;
+            try {
+                lastTime = Long.valueOf(voneConfig.getSinaUpdateTime());
+            }catch (Exception e){
+                lastTime = 0;
+            }
+
+            if (ck.equals("") || lastTime+10800000<new Date().getTime()){
+                ck = SinaApi.login(voneConfig.getSinaUser(),voneConfig.getSinaPass());
+                if (ck.equals("")){
+                    return ApiResultUtil.error("新浪账号密码有误");
+                }
+                voneConfig.setSinaCookie(ck);
+                if (lastTime+10800000<new Date().getTime()){
+                    voneConfig.setSinaUpdateTime(String.valueOf(new Date().getTime()));
+                }
+                save(voneConfig);
+            }
+
+            String res = SinaApi.uploadImg(imgBase64,ck);
             if (res.indexOf("http")>=0){
                 return ApiResultUtil.success(res);
             }else{
@@ -74,8 +99,13 @@ public class VoneService {
         if (voneConfig == null){
             getVoneConfig();
         }
-
-        voneConfig = newConfig;
+        voneConfig.setType(newConfig.getType());
+        voneConfig.setSinaUser(newConfig.getSinaUser());
+        voneConfig.setSinaPass(newConfig.getSinaPass());
+        voneConfig.setKey(newConfig.getKey());
+        voneConfig.setAdmin(newConfig.getAdmin());
+        voneConfig.setSinaCookie("");
+        voneConfig.setSinaUpdateTime("");
         save(voneConfig);
 
         return ResultUtil.success();
@@ -104,6 +134,7 @@ public class VoneService {
                 voneConfig.setAdmin(VoneUtil.getSubString(myIni,"Admin=[","]"));
                 voneConfig.setSinaUser(VoneUtil.getSubString(myIni,"SinaUser=[","]"));
                 voneConfig.setSinaPass(VoneUtil.getSubString(myIni,"SinaPass=[","]"));
+                voneConfig.setSinaCookie(VoneUtil.getSubString(myIni,"SinaCookie=[","]"));
                 voneConfig.setKey(VoneUtil.getSubString(myIni,"Key=[","]"));
                 try {
                     voneConfig.setType(Integer.valueOf(VoneUtil.getSubString(myIni,"Type=[","]")));
@@ -115,6 +146,7 @@ public class VoneService {
                 voneConfig.setAdmin("123456");
                 voneConfig.setSinaUser("");
                 voneConfig.setSinaPass("");
+                voneConfig.setSinaCookie("");
                 voneConfig.setKey("123456");
                 voneConfig.setType(1);
                 voneConfig.setSinaUpdateTime("");
@@ -143,9 +175,11 @@ public class VoneService {
         String myIni = "Admin=["+voneConfig.getAdmin()+"]\r\n";
         myIni+="SinaUser=["+voneConfig.getSinaUser()+"]\r\n";
         myIni+="SinaPass=["+voneConfig.getSinaPass()+"]\r\n";
+        myIni+="SinaCookie=["+voneConfig.getSinaCookie()+"]\r\n";
         myIni+="Key=["+voneConfig.getKey()+"]\r\n";
         myIni+="Type=["+voneConfig.getType()+"]\r\n";
         myIni+="SinaUpdateTime=["+voneConfig.getSinaUpdateTime()+"]\r\n";
+
         VoneUtil.contentToTxt(myPath,myIni);
     }
 }
