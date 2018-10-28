@@ -18,7 +18,7 @@
 
 > 超简Api图床的运行环境为JDK版本1.8。
 
-> 超简图床PHP版本已经发布，欢迎使用【https://github.com/szvone/imgApi】
+> 超简图床PHP版本已经发布，欢迎使用【 https://github.com/szvone/imgApi 】
 
 ## 安装
 
