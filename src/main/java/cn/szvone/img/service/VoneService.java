@@ -31,12 +31,13 @@ public class VoneService {
 
 
         if (voneConfig.getType() == 1){
-            String res = SougouApi.uploadImg(imgBase64);
-            if (res.indexOf("http")>=0){
-                return ApiResultUtil.success(res);
-            }else{
-                return ApiResultUtil.error("上传失败");
-            }
+            return ApiResultUtil.error("搜狗图床已停止服务");
+//            String res = SougouApi.uploadImg(imgBase64);
+//            if (res.indexOf("http")>=0){
+//                return ApiResultUtil.success(res);
+//            }else{
+//                return ApiResultUtil.error("上传失败");
+//            }
         }else if (voneConfig.getType() == 2){
             String ck = voneConfig.getSinaCookie();
             long lastTime = 0;
@@ -48,9 +49,11 @@ public class VoneService {
 
             if (ck.equals("") || lastTime+10800000<new Date().getTime()){
                 ck = SinaApi.login(voneConfig.getSinaUser(),voneConfig.getSinaPass());
+
                 if (ck.equals("")){
                     return ApiResultUtil.error("新浪账号密码有误");
                 }
+
                 voneConfig.setSinaCookie(ck);
                 if (lastTime+10800000<new Date().getTime()){
                     voneConfig.setSinaUpdateTime(String.valueOf(new Date().getTime()));
@@ -62,7 +65,13 @@ public class VoneService {
             if (res.indexOf("http")>=0){
                 return ApiResultUtil.success(res);
             }else{
-                return ApiResultUtil.error("上传失败");
+                if (res.equals("-1")){
+                    voneConfig.setSinaCookie("");
+                    save(voneConfig);
+                    return ApiResultUtil.error("新浪账号密码有误");
+                }else {
+                    return ApiResultUtil.error("服务器繁忙，错误代码："+res);
+                }
             }
         }
 
@@ -139,7 +148,7 @@ public class VoneService {
                 try {
                     voneConfig.setType(Integer.valueOf(VoneUtil.getSubString(myIni,"Type=[","]")));
                 }catch (Exception e){
-                    voneConfig.setType(1);
+                    voneConfig.setType(2);
                 }
                 voneConfig.setSinaUpdateTime(VoneUtil.getSubString(myIni,"SinaUpdateTime=[","]"));
             }else{
@@ -148,7 +157,7 @@ public class VoneService {
                 voneConfig.setSinaPass("");
                 voneConfig.setSinaCookie("");
                 voneConfig.setKey("123456");
-                voneConfig.setType(1);
+                voneConfig.setType(2);
                 voneConfig.setSinaUpdateTime("");
                 save(voneConfig);
             }

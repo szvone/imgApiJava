@@ -17,7 +17,7 @@ public class SinaApi {
     public static String uploadImg(String imgBase64,String ck) {
 
 
-        String url = "http://picupload.service.weibo.com/interface/pic_upload.php?mime=image%2Fjpeg&data=base64&url=0&markpos=1&logo=&nick=0&marks=1&app=miniblog";
+        String url = "http://picupload.weibo.com/interface/pic_upload.php?cb=https%3A%2F%2Fweibo.com%2Faj%2Fstatic%2Fupimgback.html%3F_wv%3D5%26callback%3DSTK_ijax_1551096206285100&mime=image%2Fjpeg&data=base64&url=weibo.com%2Fu%2F5734329255&markpos=1&logo=1&nick=&marks=0&app=miniblog&s=rdxt&pri=0&file_source=2";
 
 
 
@@ -28,6 +28,9 @@ public class SinaApi {
         InputStream inputStream = null;
         //尝试发送请求
         try {
+
+            //ck="SUB=_2A25xd6e5DeRhGeNJ6FYS8ifOzjmIHXVSBJ5xrDV8PUNbmtAKLXnHkW9NS8PUgB08tOVmchSobLjjnfy2-EM-svCC;";
+
             u = new URL(url);
             con = (HttpURLConnection) u.openConnection();
             con.setRequestMethod("POST");
@@ -46,6 +49,7 @@ public class SinaApi {
             //读取返回内容
             inputStream = con.getInputStream();
 
+            //https://weibo.com/aj/static/upimgback.html?_wv=5&callback=STK_ijax_1551096206285100&ret=1&pid=006g4EZxgy1g0iz2blozoj30u01aogo9
 
             InputStreamReader isr = new InputStreamReader(inputStream);
             BufferedReader bufr = new BufferedReader(isr);
@@ -57,11 +61,21 @@ public class SinaApi {
                 ret+=str;
             }
 
-            ret = VoneUtil.getSubString(ret,"\"name\":\"pic_1\",\"pid\":\"","\"}");
+            System.out.println(con.getHeaderField("location"));
 
-            if (!ret.equals("")){
-                ret = "http://wx1.sinaimg.cn/large/"+ret+".jpg";
+            String retCode = VoneUtil.getSubString(con.getHeaderField("location")+"&","&ret=","&");
+            if (retCode.equals("1")){
+                ret = VoneUtil.getSubString(con.getHeaderField("location")+"&","&pid=","&");
+
+                if (!ret.equals("")){
+                    ret = "http://wx1.sinaimg.cn/large/"+ret+".jpg";
+                }
+            }else {
+                ret = retCode;
             }
+
+
+
 
 
         } catch (Exception e) {
@@ -110,7 +124,7 @@ public class SinaApi {
             while ((str = bufr.readLine()) != null) {
                 ret+=str;
             }
-
+            System.out.println(ret);
             //获取cookie
             Map<String, List<String>> map=con.getHeaderFields();
             Set<String> set=map.keySet();
